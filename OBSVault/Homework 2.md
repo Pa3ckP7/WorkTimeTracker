@@ -77,7 +77,7 @@ A client asks Joe how many hours he has spent in total and when, (the client wan
 Relying on memory, and manual logging.
 
 **Value proposition:**
-
+The system can export clear PDF report based on client.
 
 
 ---
@@ -104,23 +104,23 @@ In the past, Diana relied on end-of-day notes to log her time, often struggling 
 **Problem:**  
 Diana must ensure time spent on different cases is never mixed.
 
-**Alternatives:**  
-- Create a separate profile for each case.  
-- Use tags to label entries by case within a single profile.
+**Alternatives:**
+- Diana has to note down for which client the hours were spent on, this makes creating reports on the hours spent harder. 
+- Diana has to keep seperate records for each client.
 
-#### Scenario 2: Missing Categorization
-**Problem:**  
-Time entries are recorded but not categorized by task type.
-
-**Alternatives:**  
-- Use mass tagging to categorize a range of entries.  
-- Edit entries individually for precise classification.
+**Value proposition:**
+The system can differentiate between clients on its own.
 
 #### Scenario 3: Billing Review or Dispute
 **Problem:**  
 A client requests detailed justification for billed hours.
 
-**Alternatives:**  
-- Export a detailed PDF including start time, end time, and duration.  
-- Export a summary report first and provide details only if required.
+
+**Alternatives:**
+- Diana has to gather the recorded data for that client and manually write a report.
+- Diana sends the spreadsheets to a LLM to write a report for that client for her, which may contain inaccuracies.
+
+
+**Value proposition:**
+The system is able to properly categorize hours and generate an automatic report based on those categories.
 
