@@ -1,0 +1,47 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    // Auto-fix with ESLint on save
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+
+    // Use workspace TypeScript version
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+
+    // ESLint
+    "eslint.useFlatConfig": true,
+
+    // Hide build/dependency folders
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/node_modules": true,
+      "**/.capacitor": true
+    },
+
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/android/build": true,
+      "pnpm-lock.yaml": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "Vue.volar",
+      "dbaeumer.vscode-eslint",
+      "oxc.oxc-vscode",
+      "vitest.explorer",
+      "EditorConfig.EditorConfig"
+    ],
+    "unwantedRecommendations": [
+      "octref.vetur"
+    ]
+  }
+}
