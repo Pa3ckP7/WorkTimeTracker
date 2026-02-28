@@ -1,3 +1,6 @@
+*Authors: Galileo Pellizer (89231430), Patrick Peroša (89231291), Amar Ustavdić (89191041)*
+*Repo:* https://github.com/Pa3ckP7/WorkTimeTracker
+
 ## Persona 1 – John Falk (Part-Time Student Worker)
 
 ### 1. Name
