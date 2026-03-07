@@ -4,6 +4,7 @@ import { migrations } from './migrations';
 
 const DB_NAME = 'worktimetracker.db';
 export const DB_VERSION = 1;
+export const DB_CONNECTION_TOKEN = 'SQLiteDBConnection';
 
 let connection: SQLiteDBConnection | null = null;
 let sqliteConnection: SQLiteConnection | null = null;

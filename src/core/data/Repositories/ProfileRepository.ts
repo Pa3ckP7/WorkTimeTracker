@@ -1,9 +1,14 @@
+import { injectable, inject } from 'tsyringe';
 import type { SQLiteDBConnection } from '@capacitor-community/sqlite';
 import type { Profile } from '../types';
+import { DB_CONNECTION_TOKEN } from '../db';
 
+// Similar to C#: [Service] or [Injectable]
+@injectable()
 export class ProfileRepository {
+  // Similar to C#: constructor(IDbConnection connection)
   // eslint-disable-next-line no-unused-vars
-  constructor(private _connection: SQLiteDBConnection) {}
+  constructor(@inject(DB_CONNECTION_TOKEN) private _connection: SQLiteDBConnection) {}
 
   async GetProfiles(): Promise<Profile[]> {
     const result = await this._connection.query('SELECT * FROM Profile', []);

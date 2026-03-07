@@ -1,6 +1,8 @@
+import { injectable, inject } from 'tsyringe';
 import type { DBSQLiteValues, SQLiteDBConnection } from "@capacitor-community/sqlite";
 import type { Timer } from "../types";
 import { parseISO } from "date-fns";
+import { DB_CONNECTION_TOKEN } from '../db';
 
 type TimerEntity = {
     id: number,
@@ -9,23 +11,27 @@ type TimerEntity = {
     endDate: string
 }
 
-class TimerRepository{
+// Similar to C#: [Service] or [Injectable]
+@injectable()
+export class TimerRepository{
 
+  // Similar to C#: constructor(IDbConnection connection)
   // eslint-disable-next-line no-unused-vars
-  constructor(private _connection: SQLiteDBConnection) {}
+  constructor(@inject(DB_CONNECTION_TOKEN) private _connection: SQLiteDBConnection) {}
 
-  async GetTimers(profileId: number): Promise<Timer[]>{
+  async getTimers(profileId: number): Promise<Timer[]>{
     const dbData = await this._connection.query("SELECT * FROM Timer WHERE profileId=?", [profileId]);
     return this.fromEntities(dbData.values as TimerEntity[]);
 
   }
 
-  async GetTimer(id: number): Promise<Timer>{
+  async getTimer(id: number): Promise<Timer|null>{
     const dbData = await this._connection.query("SELECT * FROM Timer WHERE id=?", [id]);
+    if (dbData.values.length == 0) return null;
     return this.fromEntities([dbData.values[0] as TimerEntity])[0];
   }
 
-  async CreateTimer(data: Omit<Timer, "id">): Promise<Timer> {
+  async createTimer(data: Omit<Timer, "id">): Promise<Timer> {
     const parsedData = this.toEntities([data as Timer])[0];
     const result = await this._connection.run(
       'INSERT INTO Timer (profileId, startDate, endDate) VALUES (?, ?, ?)',
@@ -39,7 +45,7 @@ class TimerRepository{
     return { id: insertedId, ...data };
   }
 
-  async UpdateTimer(id: number, data: Omit<Partial<Timer>, "id">): Promise<void> {
+  async updateTimer(id: number, data: Omit<Partial<Timer>, "id">): Promise<void> {
     const updates: string[] = [];
     const values = [];
 

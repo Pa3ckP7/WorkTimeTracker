@@ -8,9 +8,13 @@
     "paths": {
       "@/*": ["./src/*"],
       "@ui/*": ["./src/ui/*"],
-      "@core/*": ["./src/core/*"],
+      "@core": ["./src/core"],
       "@shared/*": ["./src/shared/*"]
     },
+
+    // Enable decorators for dependency injection
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
 
     // Relaxed strictness - only error on severe issues
     "strict": false,
