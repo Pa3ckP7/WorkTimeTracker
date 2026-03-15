@@ -13,7 +13,11 @@ if (Capacitor.getPlatform() === 'web') {
   jeepSqlite(window)
 }
 
-await initializeCore()
+try {
+  await initializeCore()
+} catch (error) {
+  console.error('[Bootstrap] Core initialization failed:', error)
+}
 
 const app = createApp(App)
 

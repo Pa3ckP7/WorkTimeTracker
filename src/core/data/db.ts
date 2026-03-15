@@ -21,10 +21,12 @@ export async function initializeDatabase(): Promise<SQLiteDBConnection> {
     // Web-specific initialization
     if (platform === 'web') {
       await customElements.whenDefined('jeep-sqlite');
-      const jeepSqliteEl = document.querySelector('jeep-sqlite');
-      if (jeepSqliteEl) {
-        await sqliteConnection.initWebStore();
+      let jeepSqliteEl = document.querySelector('jeep-sqlite');
+      if (!jeepSqliteEl) {
+        jeepSqliteEl = document.createElement('jeep-sqlite');
+        document.body.appendChild(jeepSqliteEl);
       }
+      await sqliteConnection.initWebStore();
     }
 
     // Create connection
@@ -39,10 +41,6 @@ export async function initializeDatabase(): Promise<SQLiteDBConnection> {
     await connection.open();
 
     // Save to store for web
-    if (platform === 'web') {
-      await sqliteConnection.saveToStore(DB_NAME);
-    }
-
     console.log('[Database] Initialized successfully');
     return connection;
   } catch (error) {
