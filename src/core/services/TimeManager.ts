@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
 import { getTimeDifferenceSeconds } from "@/shared/utils";
 import { TimerRepository } from "../data/repositories/TimerRepository";
 import type { Timer } from "../data/types";
@@ -12,7 +12,7 @@ export interface TimeResult{
 @injectable()
 export class TimerManagerService{
   // Similar to C#: constructor(ITimerRepository timeRepo)
-  constructor(private _timeRepo: TimerRepository){}
+  constructor(@inject(TimerRepository) private _timeRepo: TimerRepository){}
 
   public async StartTimer( profileId: number, startOverride? : Date): Promise<void>  {
     const timer = await this._timeRepo.getTimer(profileId);
@@ -29,7 +29,7 @@ export class TimerManagerService{
     const timer = await this._timeRepo.getTimer(profileId);
     if (timer === null) throw new Error("Timer is not started");
     const stopTime = new Date();
-    this._timeRepo.updateTimer(timer.id,{endDate: stopTime});
+    await this._timeRepo.updateTimer(timer.id,{endDate: stopTime});
     return {
       seconds: getTimeDifferenceSeconds(timer.startDate, stopTime),
       startDate: timer.startDate

@@ -11,7 +11,7 @@ export class ProfileRepository {
   constructor(@inject(DB_CONNECTION_TOKEN) private _connection: SQLiteDBConnection) {}
 
   async GetProfiles(): Promise<Profile[]> {
-    const result = await this._connection.query('SELECT * FROM Profile', []);
+    const result = await this._connection.query('SELECT * FROM Profile ORDER BY id ASC', []);
     return (result.values || []) as Profile[];
   }
 

@@ -1,5 +1,5 @@
 // Core initialization
-export { initializeCore} from './init';
+export { initializeCore, ensureCoreInitialized } from './init';
 
 // Services
 export type { TimeResult } from './services/TimeManager';

@@ -21,10 +21,9 @@ export async function initializeDatabase(): Promise<SQLiteDBConnection> {
     // Web-specific initialization
     if (platform === 'web') {
       await customElements.whenDefined('jeep-sqlite');
-      let jeepSqliteEl = document.querySelector('jeep-sqlite');
+      const jeepSqliteEl = document.querySelector('jeep-sqlite');
       if (!jeepSqliteEl) {
-        jeepSqliteEl = document.createElement('jeep-sqlite');
-        document.body.appendChild(jeepSqliteEl);
+        throw new Error('[Database] jeep-sqlite host element was not initialized');
       }
       await sqliteConnection.initWebStore();
     }

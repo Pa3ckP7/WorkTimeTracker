@@ -8,7 +8,7 @@ type TimerEntity = {
     id: number,
     profileId: number,
     startDate: string,
-    endDate: string
+  endDate: string | null
 }
 
 // Similar to C#: [Service] or [Injectable]
@@ -20,14 +20,20 @@ export class TimerRepository{
   constructor(@inject(DB_CONNECTION_TOKEN) private _connection: SQLiteDBConnection) {}
 
   async getTimers(profileId: number): Promise<Timer[]>{
-    const dbData = await this._connection.query("SELECT * FROM Timer WHERE profileId=?", [profileId]);
-    return this.fromEntities(dbData.values as TimerEntity[]);
+    const dbData = await this._connection.query(
+      "SELECT * FROM Timer WHERE profileId=? ORDER BY startDate DESC",
+      [profileId]
+    );
+    return this.fromEntities((dbData.values || []) as TimerEntity[]);
 
   }
 
-  async getTimer(id: number): Promise<Timer|null>{
-    const dbData = await this._connection.query("SELECT * FROM Timer WHERE id=?", [id]);
-    if (dbData.values.length == 0) return null;
+  async getTimer(profileId: number): Promise<Timer|null>{
+    const dbData = await this._connection.query(
+      "SELECT * FROM Timer WHERE profileId=? AND endDate IS NULL ORDER BY id DESC LIMIT 1",
+      [profileId]
+    );
+    if (!dbData.values || dbData.values.length == 0) return null;
     return this.fromEntities([dbData.values[0] as TimerEntity])[0];
   }
 
@@ -71,7 +77,7 @@ export class TimerRepository{
     values.push(id); // Add id for WHERE clause
 
     const sql = `UPDATE Timer SET ${updates.join(", ")} WHERE id = ?`;
-    await this._connection.query(sql, values);
+    await this._connection.run(sql, values);
   }
 
   async DeleteTimer(id: number): Promise<void>{
@@ -92,7 +98,7 @@ export class TimerRepository{
       id: t.id,
       profileId: t.profileId,
       startDate: t.startDate.toISOString(),
-      endDate: t.endDate?.toISOString()
+      endDate: t.endDate === null ? null : t.endDate.toISOString()
     }))
   }
 }

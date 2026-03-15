@@ -5,6 +5,9 @@ import { ProfileRepository } from './data/repositories/ProfileRepository';
 import { TimerRepository } from './data/repositories/TimerRepository';
 import { TimerManagerService } from './services/TimeManager';
 
+let isCoreInitialized = false;
+let initializePromise: Promise<void> | null = null;
+
 /**
  * Initialize the core module
  * - Sets up the Capacitor SQLite connection
@@ -12,18 +15,39 @@ import { TimerManagerService } from './services/TimeManager';
  * - Configures dependency injection container
  */
 export async function initializeCore(): Promise<void> {
-  console.log('[Core] Initializing...');
+  if (isCoreInitialized) {
+    return;
+  }
 
-  const connection = await initializeDatabase();
-  await runMigrations(connection);
+  if (initializePromise) {
+    return initializePromise;
+  }
 
-  // Register services in DI container (similar to C# ConfigureServices)
-  container.register<SQLiteDBConnection>(DB_CONNECTION_TOKEN, {
-    useFactory: () => getConnection()
-  });
-  container.registerSingleton(ProfileRepository);
-  container.registerSingleton(TimerRepository);
-  container.registerSingleton(TimerManagerService);
+  initializePromise = (async () => {
+    console.log('[Core] Initializing...');
 
-  console.log('[Core] Initialization complete');
+    const connection = await initializeDatabase();
+    await runMigrations(connection);
+
+    // Register services in DI container (similar to C# ConfigureServices)
+    container.register<SQLiteDBConnection>(DB_CONNECTION_TOKEN, {
+      useFactory: () => getConnection()
+    });
+    container.registerSingleton(ProfileRepository);
+    container.registerSingleton(TimerRepository);
+    container.registerSingleton(TimerManagerService);
+
+    isCoreInitialized = true;
+    console.log('[Core] Initialization complete');
+  })();
+
+  try {
+    await initializePromise;
+  } finally {
+    initializePromise = null;
+  }
+}
+
+export async function ensureCoreInitialized(): Promise<void> {
+  await initializeCore();
 }
