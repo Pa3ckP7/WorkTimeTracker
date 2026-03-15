@@ -3,14 +3,26 @@ import type { Profile, Timer } from "../data/types";
 import { TimerManagerService, type TimeResult } from "../services/TimeManager";
 import { ProfileRepository } from "../data/repositories/ProfileRepository";
 
+let profileRepo: ProfileRepository;
 
 export async function getProfileList() : Promise<Profile[]> {
-  const profileRepo = container.resolve(ProfileRepository);
+  profileRepo ??= container.resolve(ProfileRepository);
   return profileRepo.GetProfiles();
 }
 
 export function getProfile(id: number): ProfileManager{
   return new ProfileManager(id);
+}
+
+export async function createProfile(name: string): Promise<number> {
+  profileRepo ??= container.resolve(ProfileRepository);
+  const profile = await profileRepo.CreateProfile({name})
+  return profile.id;
+}
+
+export async function deleteProfile(id: number): Promise<void> {
+  profileRepo ??= container.resolve(ProfileRepository);
+  await profileRepo.DeleteProfile(id);
 }
 
 export class ProfileManager{
