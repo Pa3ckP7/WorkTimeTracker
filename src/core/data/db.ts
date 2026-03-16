@@ -10,6 +10,7 @@ let connection: SQLiteDBConnection | null = null;
 let sqliteConnection: SQLiteConnection | null = null;
 
 async function ensureWebJeepSqliteHostReady(): Promise<void> {
+  const wasmPath = `${import.meta.env.BASE_URL}assets`;
   await customElements.whenDefined('jeep-sqlite');
 
   let jeepSqliteEl = document.querySelector('jeep-sqlite') as
@@ -20,10 +21,10 @@ async function ensureWebJeepSqliteHostReady(): Promise<void> {
     jeepSqliteEl = document.createElement('jeep-sqlite') as HTMLElement & {
       componentOnReady?: () => Promise<unknown>
     };
-    jeepSqliteEl.setAttribute('wasmpath', '/assets');
+    jeepSqliteEl.setAttribute('wasmpath', wasmPath);
     document.body.appendChild(jeepSqliteEl);
   } else if (!jeepSqliteEl.getAttribute('wasmpath')) {
-    jeepSqliteEl.setAttribute('wasmpath', '/assets');
+    jeepSqliteEl.setAttribute('wasmpath', wasmPath);
   }
 
   if (typeof jeepSqliteEl.componentOnReady === 'function') {

@@ -15,6 +15,7 @@ type WebInitWindow = Window & {
 
 async function initializeWebJeepSqliteHost(): Promise<void> {
   if (Capacitor.getPlatform() !== 'web') return
+  const wasmPath = `${import.meta.env.BASE_URL}assets`
 
   const webWindow = window as WebInitWindow
   if (!customElements.get('jeep-sqlite') && !webWindow.__workTimeJeepSqliteRegistered) {
@@ -35,7 +36,7 @@ async function initializeWebJeepSqliteHost(): Promise<void> {
     document.body.appendChild(jeepSqliteEl)
   }
 
-  jeepSqliteEl.setAttribute('wasmpath', '/assets')
+  jeepSqliteEl.setAttribute('wasmpath', wasmPath)
   if (typeof jeepSqliteEl.componentOnReady === 'function') {
     await jeepSqliteEl.componentOnReady()
   }
