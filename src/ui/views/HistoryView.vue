@@ -63,6 +63,23 @@ const totalDuration = computed(() => {
   return formatDuration(totalSeconds)
 })
 
+const supportsEntryEditing = computed(() => {
+  const sampleProfileId = profiles.value[0]?.id ?? 0
+  const manager = getProfile(sampleProfileId) as unknown as {
+    updateEntry?: unknown
+    updateTimeEntry?: unknown
+    deleteEntry?: unknown
+    deleteTimeEntry?: unknown
+  }
+
+  return (
+    typeof manager.updateEntry === 'function' ||
+    typeof manager.updateTimeEntry === 'function' ||
+    typeof manager.deleteEntry === 'function' ||
+    typeof manager.deleteTimeEntry === 'function'
+  )
+})
+
 function formatDayKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
@@ -157,7 +174,6 @@ onMounted(async () => {
           <option value="all">All time</option>
         </select>
       </div>
-      <button class="refresh" :disabled="isLoading" @click="loadHistory">Refresh</button>
     </section>
 
     <section class="panel">
@@ -179,50 +195,22 @@ onMounted(async () => {
                 <p class="entry-profile">{{ entry.profileName }}</p>
                 <p class="entry-time">{{ formatEntryTime(entry.startDate) }}</p>
               </div>
-              <strong>{{ formatDuration(entry.seconds) }}</strong>
+
+              <div class="entry-right">
+                <strong>{{ formatDuration(entry.seconds) }}</strong>
+                <button v-if="supportsEntryEditing" class="edit-btn btn-soft" disabled>
+                  Edit
+                </button>
+              </div>
             </li>
           </ul>
         </section>
       </div>
     </section>
-
-    <section class="panel">
-      <h2>Next step</h2>
-      <p>Entry editing and bulk tagging will be added in the next frontend phase.</p>
-    </section>
   </section>
 </template>
 
 <style scoped>
-.screen {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.screen-label {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  opacity: 0.8;
-}
-
-.panel {
-  border: 1px solid;
-  border-radius: 0.75rem;
-  padding: 0.9rem 1rem;
-  display: grid;
-  gap: 0.55rem;
-}
-
-.panel h2,
-.panel p {
-  margin: 0;
-}
-
-.panel h2 {
-  font-size: 1rem;
-}
-
 .summary-row {
   display: flex;
   justify-content: space-between;
@@ -231,16 +219,13 @@ onMounted(async () => {
 }
 
 .summary-row strong {
-  font-size: 0.95rem;
+  font-size: 1rem;
+  color: var(--primary);
 }
 
 .filters .row {
   display: grid;
   gap: 0.35rem;
-}
-
-.refresh {
-  width: fit-content;
 }
 
 .group-list {
@@ -256,7 +241,7 @@ onMounted(async () => {
 .group h3 {
   margin: 0;
   font-size: 0.9rem;
-  opacity: 0.85;
+  color: var(--text-muted);
 }
 
 .group ul {
@@ -268,13 +253,25 @@ onMounted(async () => {
 }
 
 .group li {
-  border: 1px solid;
+  border: 1px solid var(--border);
   border-radius: 0.65rem;
+  background: var(--surface-soft);
   padding: 0.55rem 0.7rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0.8rem;
+}
+
+.entry-right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.edit-btn {
+  padding: 0.42rem 0.62rem;
+  font-size: 0.82rem;
 }
 
 .entry-profile,
@@ -288,17 +285,7 @@ onMounted(async () => {
 }
 
 .entry-time {
-  opacity: 0.8;
+  color: var(--text-muted);
   font-size: 0.875rem;
-}
-
-select {
-  padding: 0.5rem 0.75rem;
-  font: inherit;
-}
-
-button {
-  padding: 0.5rem 0.75rem;
-  font: inherit;
 }
 </style>

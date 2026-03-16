@@ -170,8 +170,8 @@ onMounted(async () => {
       </div>
 
       <div class="quick-actions">
-        <button :disabled="isLoading" @click="applyQuickRange('7days')">Last 7 days</button>
-        <button :disabled="isLoading" @click="applyQuickRange('month')">This month</button>
+        <button class="btn-soft" :disabled="isLoading" @click="applyQuickRange('7days')">Last 7 days</button>
+        <button class="btn-soft" :disabled="isLoading" @click="applyQuickRange('month')">This month</button>
       </div>
 
       <label>
@@ -186,8 +186,6 @@ onMounted(async () => {
         Tag filter (visual only)
         <input v-model="tagFilter" placeholder="e.g. paid, unpaid" />
       </label>
-
-      <button class="refresh" :disabled="isLoading" @click="loadExportData">Refresh Data</button>
     </section>
 
     <section class="panel">
@@ -203,7 +201,7 @@ onMounted(async () => {
       <p v-else-if="entryCount === 0">No entries found for the current filter.</p>
     </section>
 
-    <button class="generate" :disabled="!canGenerate || isLoading" @click="triggerGenerateMock">
+    <button class="generate btn-primary" :disabled="!canGenerate || isLoading" @click="triggerGenerateMock">
       Generate PDF
     </button>
     <p v-if="generateMessage" class="message">{{ generateMessage }}</p>
@@ -211,35 +209,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.screen {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.screen-label {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  opacity: 0.8;
-}
-
-.panel {
-  border: 1px solid;
-  border-radius: 0.75rem;
-  padding: 0.9rem 1rem;
-  display: grid;
-  gap: 0.6rem;
-}
-
-.panel h2,
-.panel p {
-  margin: 0;
-}
-
-.panel h2 {
-  font-size: 1rem;
-}
-
 .date-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -256,27 +225,15 @@ onMounted(async () => {
   width: fit-content;
 }
 
-label {
-  display: grid;
-  gap: 0.35rem;
-  font-weight: 500;
-}
-
-input,
-select,
-.refresh,
 .generate {
-  padding: 0.55rem 0.75rem;
-  font: inherit;
-}
-
-.generate {
-  border-radius: 0.7rem;
+  min-height: 50px;
+  border-radius: 999px;
 }
 
 .message,
 .error {
-  margin: 0;
+  color: var(--success);
+  font-weight: 600;
 }
 
 @media (max-width: 480px) {

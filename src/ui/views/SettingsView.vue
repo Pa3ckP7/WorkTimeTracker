@@ -34,39 +34,24 @@ const reminders = ref(false)
 </template>
 
 <style scoped>
-.screen {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.screen-label {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  opacity: 0.8;
-}
-
-.panel {
-  border: 1px solid;
-  border-radius: 0.75rem;
-  padding: 0.9rem 1rem;
-  display: grid;
-  gap: 0.65rem;
-}
-
-.panel h2,
-.panel p {
-  margin: 0;
-}
-
-.panel h2 {
-  font-size: 1rem;
-}
-
 .toggle-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  padding: 0.62rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.toggle-row span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.toggle-row input {
+  width: 18px;
+  height: 18px;
 }
 </style>

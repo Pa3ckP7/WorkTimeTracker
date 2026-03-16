@@ -9,6 +9,28 @@ export const DB_CONNECTION_TOKEN = 'SQLiteDBConnection';
 let connection: SQLiteDBConnection | null = null;
 let sqliteConnection: SQLiteConnection | null = null;
 
+async function ensureWebJeepSqliteHostReady(): Promise<void> {
+  await customElements.whenDefined('jeep-sqlite');
+
+  let jeepSqliteEl = document.querySelector('jeep-sqlite') as
+    | (HTMLElement & { componentOnReady?: () => Promise<unknown> })
+    | null;
+
+  if (!jeepSqliteEl) {
+    jeepSqliteEl = document.createElement('jeep-sqlite') as HTMLElement & {
+      componentOnReady?: () => Promise<unknown>
+    };
+    jeepSqliteEl.setAttribute('wasmpath', '/assets');
+    document.body.appendChild(jeepSqliteEl);
+  } else if (!jeepSqliteEl.getAttribute('wasmpath')) {
+    jeepSqliteEl.setAttribute('wasmpath', '/assets');
+  }
+
+  if (typeof jeepSqliteEl.componentOnReady === 'function') {
+    await jeepSqliteEl.componentOnReady();
+  }
+}
+
 export async function initializeDatabase(): Promise<SQLiteDBConnection> {
   if (connection) {
     return connection;
@@ -20,11 +42,7 @@ export async function initializeDatabase(): Promise<SQLiteDBConnection> {
 
     // Web-specific initialization
     if (platform === 'web') {
-      await customElements.whenDefined('jeep-sqlite');
-      const jeepSqliteEl = document.querySelector('jeep-sqlite');
-      if (!jeepSqliteEl) {
-        throw new Error('[Database] jeep-sqlite host element was not initialized');
-      }
+      await ensureWebJeepSqliteHostReady();
       await sqliteConnection.initWebStore();
     }
 

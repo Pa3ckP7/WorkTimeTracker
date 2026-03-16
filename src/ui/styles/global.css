@@ -1,0 +1,159 @@
+:root {
+  --bg-start: #f4f5f7;
+  --bg-end: #eeeff2;
+  --surface: #ffffff;
+  --surface-soft: #f8f9fb;
+  --border: #d8dde4;
+  --text: #252a32;
+  --text-muted: #687282;
+
+  --primary: #5e7868;
+  --primary-press: #4f6658;
+  --success: #2bb673;
+  --danger: #c6545f;
+  --danger-press: #a94750;
+
+  --shadow-soft: 0 10px 24px rgba(67, 78, 92, 0.12);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: linear-gradient(160deg, var(--bg-start), var(--bg-end));
+}
+
+.screen {
+  display: grid;
+  gap: 1rem;
+}
+
+.screen-label {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.panel,
+.card-surface {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.panel {
+  padding: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.panel h2,
+.panel h3,
+.panel p {
+  margin: 0;
+}
+
+.panel h2 {
+  font-size: 1rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+input,
+select,
+button {
+  font: inherit;
+  border-radius: var(--radius-md);
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+  padding: 0.62rem 0.78rem;
+}
+
+input:focus,
+select:focus,
+button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary), white 15%);
+  outline-offset: 1px;
+}
+
+button {
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  padding: 0.62rem 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-press);
+}
+
+.btn-danger {
+  background: var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger-press);
+}
+
+.btn-soft {
+  background: var(--surface-soft);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--text-muted);
+}

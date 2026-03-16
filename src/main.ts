@@ -7,20 +7,41 @@ import { ensureCoreInitialized } from './core'
 
 import App from './ui/App.vue'
 import router from './ui/router'
+import './ui/styles/global.css'
 
-// Initialize jeep-sqlite for web platform
-if (Capacitor.getPlatform() === 'web') {
-  await jeepSqlite(window)
+type WebInitWindow = Window & {
+  __workTimeJeepSqliteRegistered?: boolean
+}
+
+async function initializeWebJeepSqliteHost(): Promise<void> {
+  if (Capacitor.getPlatform() !== 'web') return
+
+  const webWindow = window as WebInitWindow
+  if (!customElements.get('jeep-sqlite') && !webWindow.__workTimeJeepSqliteRegistered) {
+    await jeepSqlite(window)
+    webWindow.__workTimeJeepSqliteRegistered = true
+  }
+
   await customElements.whenDefined('jeep-sqlite')
 
-  let jeepSqliteEl = document.querySelector('jeep-sqlite')
+  let jeepSqliteEl = document.querySelector('jeep-sqlite') as
+    | (HTMLElement & { componentOnReady?: () => Promise<unknown> })
+    | null
+
   if (!jeepSqliteEl) {
-    jeepSqliteEl = document.createElement('jeep-sqlite')
+    jeepSqliteEl = document.createElement('jeep-sqlite') as HTMLElement & {
+      componentOnReady?: () => Promise<unknown>
+    }
     document.body.appendChild(jeepSqliteEl)
   }
 
   jeepSqliteEl.setAttribute('wasmpath', '/assets')
+  if (typeof jeepSqliteEl.componentOnReady === 'function') {
+    await jeepSqliteEl.componentOnReady()
+  }
 }
+
+await initializeWebJeepSqliteHost()
 
 try {
   await ensureCoreInitialized()

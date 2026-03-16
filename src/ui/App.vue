@@ -62,19 +62,21 @@ const tabs = [
   position: sticky;
   top: 0;
   z-index: 5;
-  background: inherit;
-  border-bottom: 1px solid;
-  padding: 1rem;
+  background: color-mix(in srgb, var(--surface), transparent 6%);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  padding: 1rem 1rem 0.9rem;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
+  font-weight: 800;
 }
 
 .app-content {
   padding: 1rem;
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5.4rem + env(safe-area-inset-bottom));
   max-width: 720px;
   width: 100%;
   margin: 0 auto;
@@ -86,26 +88,29 @@ const tabs = [
   bottom: 0;
   left: 0;
   right: 0;
-  border-top: 1px solid;
-  background: inherit;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface), transparent 7%);
+  backdrop-filter: blur(8px);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+  padding: 0.6rem 0.6rem calc(0.7rem + env(safe-area-inset-bottom));
   gap: 0.35rem;
 }
 
 .tab-item {
   text-align: center;
   text-decoration: none;
-  color: inherit;
-  padding: 0.55rem 0.45rem;
-  border-radius: 0.65rem;
+  color: var(--text-muted);
+  padding: 0.6rem 0.45rem;
+  border-radius: 999px;
   border: 1px solid transparent;
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .tab-item.active {
-  border-color: currentColor;
-  font-weight: 700;
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary), white 65%);
+  background: color-mix(in srgb, var(--primary), white 86%);
 }
 </style>

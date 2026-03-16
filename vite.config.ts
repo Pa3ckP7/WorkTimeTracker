@@ -12,6 +12,7 @@ export default defineConfig({
   ],
   optimizeDeps: {
     entries: ['index.html'],
+    exclude: ['jeep-sqlite', '@capacitor-community/sqlite'],
   },
   resolve: {
     alias: {

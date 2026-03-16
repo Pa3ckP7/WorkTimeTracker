@@ -35,6 +35,10 @@ const hasActiveTimer = computed(() => runningTime.value !== null)
 
 const formattedElapsed = computed(() => formatDuration(elapsedSeconds.value))
 
+const timerButtonLabel = computed(() => (hasActiveTimer.value ? 'Stop' : 'Start'))
+
+const timerButtonClass = computed(() => (hasActiveTimer.value ? 'btn-danger' : 'btn-primary'))
+
 const lastEntry = computed(() => history.value[0] ?? null)
 
 function formatDuration(totalSeconds: number): string {
@@ -188,6 +192,15 @@ async function stopTimer(): Promise<void> {
   }
 }
 
+async function toggleTimer(): Promise<void> {
+  if (hasActiveTimer.value) {
+    await stopTimer()
+    return
+  }
+
+  await startTimer()
+}
+
 onMounted(async () => {
   await initialize()
 })
@@ -201,15 +214,15 @@ onBeforeUnmount(() => {
   <section class="screen">
     <p class="screen-label">Main Timer</p>
 
-    <div class="controls">
-      <div>
+    <section class="panel controls-panel">
+      <div class="profile-section">
         <p class="label">Profiles</p>
         <div class="profile-list">
           <button
             v-for="profile in profiles"
             :key="profile.id"
             :disabled="isBusy"
-            :class="['profile-button', { active: profile.id === selectedProfileId }]"
+            :class="['profile-button', 'btn-soft', { active: profile.id === selectedProfileId }]"
             @click="selectProfile(profile.id)"
           >
             {{ profile.name }}
@@ -224,53 +237,51 @@ onBeforeUnmount(() => {
           placeholder="New profile name"
           @keyup.enter="addProfile"
         />
-        <button :disabled="isBusy || !newProfileName.trim()" @click="addProfile">Add</button>
-      </div>
-    </div>
-
-    <section :class="['timer-card', { active: hasActiveTimer }]">
-      <p class="profile-name">{{ selectedProfile?.name ?? 'No profile selected' }}</p>
-      <p class="elapsed">{{ formattedElapsed }}</p>
-      <p class="status">{{ hasActiveTimer ? 'Timer is running' : 'Timer is stopped' }}</p>
-
-      <div class="timer-actions">
-        <button :disabled="isBusy || hasActiveTimer || selectedProfileId === null" @click="startTimer">
-          Start
-        </button>
-        <button :disabled="isBusy || !hasActiveTimer || selectedProfileId === null" @click="stopTimer">
-          Stop
+        <button class="btn-primary" :disabled="isBusy || !newProfileName.trim()" @click="addProfile">
+          Add
         </button>
       </div>
     </section>
 
+    <section class="timer-stage card-surface">
+      <div :class="['timer-circle', { active: hasActiveTimer }]">
+        <p class="timer-circle-label">{{ selectedProfile?.name ?? 'No profile selected' }}</p>
+        <p class="timer-circle-time">{{ formattedElapsed }}</p>
+        <p class="timer-circle-status">{{ hasActiveTimer ? 'Running' : 'Ready to start' }}</p>
+      </div>
+
+      <button
+        :class="['timer-main-btn', timerButtonClass]"
+        :disabled="isBusy || selectedProfileId === null"
+        @click="toggleTimer"
+      >
+        {{ timerButtonLabel }}
+      </button>
+      <p class="muted timer-hint">
+        {{ selectedProfileId === null ? 'Select a profile to enable timer actions.' : 'One tap to start or stop tracking.' }}
+      </p>
+    </section>
+
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
-    <section class="last-entry">
+    <section class="panel last-entry">
       <h2>Last Logged Entry</h2>
       <p v-if="lastEntry">
         {{ formatDate(lastEntry.startDate) }} · {{ formatDuration(lastEntry.seconds) }}
       </p>
-      <p v-else>No completed sessions yet.</p>
+      <p v-else class="muted">No completed sessions yet.</p>
     </section>
   </section>
 </template>
 
 <style scoped>
-.screen {
-  display: grid;
-  gap: 0.85rem;
+.controls-panel {
+  gap: 0.95rem;
 }
 
-.screen-label {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  opacity: 0.8;
-}
-
-.controls {
+.profile-section {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .new-profile {
@@ -280,8 +291,9 @@ onBeforeUnmount(() => {
 }
 
 .label {
-  margin: 0 0 0.5rem;
-  font-weight: 600;
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .profile-list {
@@ -291,64 +303,76 @@ onBeforeUnmount(() => {
 }
 
 .profile-button {
-  border: 1px solid;
   border-radius: 999px;
-  background: transparent;
+  min-width: 72px;
 }
 
 .profile-button.active {
-  font-weight: 700;
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary), white 62%);
+  background: color-mix(in srgb, var(--primary), white 88%);
 }
 
-input,
-button {
-  padding: 0.6rem 0.75rem;
-  font: inherit;
-}
-
-.timer-card {
-  border: 1px solid;
-  border-radius: 0.75rem;
-  padding: 1rem;
+.timer-stage {
+  padding: 1.2rem 1rem;
   display: grid;
-  gap: 0.75rem;
+  justify-items: center;
+  gap: 1rem;
 }
 
-.timer-card.active {
-  border-width: 2px;
+.timer-circle {
+  width: min(78vw, 290px);
+  height: min(78vw, 290px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 28% 22%, #ffffff, #edf2ff 62%, #e6efff 100%);
+  border: 4px solid color-mix(in srgb, var(--primary), white 64%);
+  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--primary), white 86%), 0 22px 34px rgba(83, 106, 187, 0.23);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: 1rem;
+  gap: 0.3rem;
 }
 
-.profile-name,
-.status {
+.timer-circle.active {
+  border-color: color-mix(in srgb, var(--success), white 45%);
+  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--success), white 84%), 0 24px 38px rgba(40, 161, 115, 0.25);
+}
+
+.timer-circle-label,
+.timer-circle-status,
+.timer-hint {
   margin: 0;
 }
 
-.elapsed {
-  margin: 0;
-  font-size: 2rem;
+.timer-circle-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
   font-weight: 700;
-  letter-spacing: 0.08em;
 }
 
-.timer-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.last-entry {
-  border: 1px solid;
-  border-radius: 0.75rem;
-  padding: 0.9rem 1rem;
-}
-
-.last-entry h2,
-.last-entry p,
-.error {
+.timer-circle-time {
   margin: 0;
+  font-size: clamp(1.9rem, 7vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
 }
 
-.last-entry h2 {
-  margin-bottom: 0.45rem;
-  font-size: 1rem;
+.timer-circle-status {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.timer-main-btn {
+  width: min(280px, 92%);
+  min-height: 52px;
+  font-size: 1.05rem;
+  border-radius: 999px;
+}
+
+.timer-hint {
+  text-align: center;
+  font-size: 0.9rem;
 }
 </style>
