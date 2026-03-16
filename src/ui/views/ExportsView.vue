@@ -113,7 +113,8 @@ async function loadExportData(): Promise<void> {
     const allEntries = (
       await Promise.all(
         profileList.map(async (profile) => {
-          const history = await getProfile(profile.id).getTimeHistory()
+          const manager = await getProfile(profile.id)
+          const history = await manager.getTimeHistory()
           return history.map<ExportEntry>((entry: TimeResult, index) => ({
             id: `${profile.id}-${entry.startDate.toISOString()}-${entry.seconds}-${index}`,
             profileId: profile.id,

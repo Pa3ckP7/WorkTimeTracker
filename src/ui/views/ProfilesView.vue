@@ -75,7 +75,8 @@ async function loadProfiles(): Promise<void> {
     const runningEntries = await Promise.all(
       profileList.map(async (profile) => {
         try {
-          const running = await getProfile(profile.id).getTime()
+          const manager = await getProfile(profile.id)
+          const running = await manager.getTime()
           return [profile.id, running] as const
         } catch {
           return [profile.id, null] as const
@@ -116,7 +117,7 @@ async function toggleTimer(profileId: number): Promise<void> {
   clearError()
 
   try {
-    const manager = getProfile(profileId)
+    const manager = await getProfile(profileId)
     const running = runningByProfile.value[profileId]
 
     if (running) {

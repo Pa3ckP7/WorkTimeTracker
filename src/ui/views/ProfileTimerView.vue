@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getProfile, getProfileList, type Profile, type TimeResult } from '@core'
 
@@ -7,11 +7,18 @@ const route = useRoute()
 const profileId = computed(() => Number(route.params.profileId))
 
 const profile = ref<Profile | null>(null)
+const manager = ref<Awaited<ReturnType<typeof getProfile>> | null>(null)
 const runningTime = ref<TimeResult | null>(null)
 const history = ref<TimeResult[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
 let ticker: number | null = null
+
+// Fetch manager when profileId changes
+watch(profileId, async (id) => {
+  manager.value = await getProfile(id)
+  await loadProfileData()
+}, { immediate: true })
 
 const elapsedSeconds = computed(() => {
   if (!runningTime.value) return 0
@@ -60,6 +67,8 @@ function startTicker(): void {
 }
 
 async function loadProfileData(): Promise<void> {
+  if (!manager.value) return
+
   isLoading.value = true
   clearError()
   history.value = []
@@ -69,16 +78,15 @@ async function loadProfileData(): Promise<void> {
   try {
     const profileList = await getProfileList()
     profile.value = profileList.find((item) => item.id === profileId.value) ?? null
-    const manager = getProfile(profileId.value)
 
     try {
-      runningTime.value = await manager.getTime()
+      runningTime.value = await manager.value.getTime()
       startTicker()
     } catch {
       runningTime.value = null
     }
 
-    history.value = await manager.getTimeHistory()
+    history.value = await manager.value.getTimeHistory()
   } catch (error) {
     setError(error)
   } finally {
@@ -87,20 +95,21 @@ async function loadProfileData(): Promise<void> {
 }
 
 async function toggleTimer(): Promise<void> {
+  if (!manager.value) return
+
   isLoading.value = true
   clearError()
 
   try {
-    const manager = getProfile(profileId.value)
     if (hasActiveTimer.value) {
-      const result = await manager.stopTimer()
+      const result = await manager.value.stopTimer()
       runningTime.value = null
       stopTicker()
       history.value = [result, ...history.value]
       return
     }
 
-    await manager.startTimer()
+    await manager.value.startTimer()
     runningTime.value = {
       seconds: 0,
       startDate: new Date(),
@@ -112,10 +121,6 @@ async function toggleTimer(): Promise<void> {
     isLoading.value = false
   }
 }
-
-onMounted(async () => {
-  await loadProfileData()
-})
 
 onBeforeUnmount(() => {
   stopTicker()

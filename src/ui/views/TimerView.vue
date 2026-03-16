@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   createProfile,
   getProfile,
@@ -15,15 +15,21 @@ const runningTime = ref<TimeResult | null>(null)
 const history = ref<TimeResult[]>([])
 const errorMessage = ref('')
 const isBusy = ref(false)
+const manager = ref<Awaited<ReturnType<typeof getProfile>> | null>(null)
 let ticker: number | null = null
 
 const selectedProfile = computed(() =>
   profiles.value.find((profile) => profile.id === selectedProfileId.value) ?? null
 )
 
-const selectedManager = computed(() => {
-  if (selectedProfileId.value === null) return null
-  return getProfile(selectedProfileId.value)
+// Fetch manager when selectedProfileId changes
+watch(selectedProfileId, async (id) => {
+  if (id === null) {
+    manager.value = null
+    return
+  }
+  manager.value = await getProfile(id)
+  await loadSelectedProfileData()
 })
 
 const elapsedSeconds = computed(() => {
@@ -97,16 +103,16 @@ async function loadSelectedProfileData(): Promise<void> {
   runningTime.value = null
   stopTicker()
 
-  if (!selectedManager.value) return
+  if (!manager.value) return
 
   try {
-    runningTime.value = await selectedManager.value.getTime()
+    runningTime.value = await manager.value.getTime()
     startTicker()
   } catch {
     runningTime.value = null
   }
 
-  history.value = await selectedManager.value.getTimeHistory()
+  history.value = await manager.value.getTimeHistory()
 }
 
 async function initialize(): Promise<void> {
@@ -114,7 +120,6 @@ async function initialize(): Promise<void> {
   clearError()
   try {
     await refreshProfiles()
-    await loadSelectedProfileData()
   } catch (error) {
     setError(error)
   } finally {
@@ -143,26 +148,16 @@ async function addProfile(): Promise<void> {
 
 async function selectProfile(profileId: number): Promise<void> {
   if (selectedProfileId.value === profileId) return
-
   selectedProfileId.value = profileId
-  isBusy.value = true
-  clearError()
-  try {
-    await loadSelectedProfileData()
-  } catch (error) {
-    setError(error)
-  } finally {
-    isBusy.value = false
-  }
 }
 
 async function startTimer(): Promise<void> {
-  if (!selectedManager.value) return
+  if (!manager.value) return
 
   isBusy.value = true
   clearError()
   try {
-    await selectedManager.value.startTimer()
+    await manager.value.startTimer()
     runningTime.value = {
       seconds: 0,
       startDate: new Date(),
@@ -176,12 +171,12 @@ async function startTimer(): Promise<void> {
 }
 
 async function stopTimer(): Promise<void> {
-  if (!selectedManager.value) return
+  if (!manager.value) return
 
   isBusy.value = true
   clearError()
   try {
-    const result = await selectedManager.value.stopTimer()
+    const result = await manager.value.stopTimer()
     runningTime.value = null
     stopTicker()
     history.value = [result, ...history.value]

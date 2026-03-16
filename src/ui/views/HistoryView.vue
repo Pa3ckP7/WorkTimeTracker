@@ -64,20 +64,8 @@ const totalDuration = computed(() => {
 })
 
 const supportsEntryEditing = computed(() => {
-  const sampleProfileId = profiles.value[0]?.id ?? 0
-  const manager = getProfile(sampleProfileId) as unknown as {
-    updateEntry?: unknown
-    updateTimeEntry?: unknown
-    deleteEntry?: unknown
-    deleteTimeEntry?: unknown
-  }
-
-  return (
-    typeof manager.updateEntry === 'function' ||
-    typeof manager.updateTimeEntry === 'function' ||
-    typeof manager.deleteEntry === 'function' ||
-    typeof manager.deleteTimeEntry === 'function'
-  )
+  // Entry editing not yet supported
+  return false
 })
 
 function formatDayKey(date: Date): string {
@@ -125,7 +113,8 @@ async function loadHistory(): Promise<void> {
     const allEntries = (
       await Promise.all(
         profileList.map(async (profile) => {
-          const history = await getProfile(profile.id).getTimeHistory()
+          const manager = await getProfile(profile.id)
+          const history = await manager.getTimeHistory()
           return history.map<HistoryEntry>((entry: TimeResult, index) => ({
             id: `${profile.id}-${entry.startDate.toISOString()}-${entry.seconds}-${index}`,
             profileId: profile.id,

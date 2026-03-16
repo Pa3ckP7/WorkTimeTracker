@@ -101,7 +101,8 @@ async function loadHistory(): Promise<void> {
     const profileList = await getProfileList()
     profile.value = profileList.find((item) => item.id === profileId.value) ?? null
 
-    const history = await getProfile(profileId.value).getTimeHistory()
+    const manager = await getProfile(profileId.value)
+    const history = await manager.getTimeHistory()
     entries.value = history
       .map<HistoryEntry>((entry: TimeResult, index) => ({
         id: `${profileId.value}-${entry.startDate.toISOString()}-${entry.seconds}-${index}`,
