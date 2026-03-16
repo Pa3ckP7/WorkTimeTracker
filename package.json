@@ -7,6 +7,7 @@
     "dev": "pnpm copy:sql-wasm && vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "build:mobile": "pnpm build && npx cap sync",
+    "build:pages": "pnpm copy:sql-wasm && vite build --mode pages",
     "android:run": "bash -lc 'export NVM_DIR=\"$HOME/.nvm\" && [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\" && nvm use v22 >/dev/null && pnpm build:mobile && npx cap run android'",
     "preview": "vite preview",
     "test:unit": "vitest",
