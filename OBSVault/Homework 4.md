@@ -1,6 +1,7 @@
 
 *Authors: Galileo Pellizer (89231430), Patrick Peroša (89231291), Amar Ustavdić (89191041)*
 *Repo:* https://github.com/Pa3ckP7/WorkTimeTracker
+*Prototype:* https://pa3ckp7.github.io/WorkTimeTracker
 
 ## Interview 1
 **Participant:** Student at UP FAMNIT, 2nd year
