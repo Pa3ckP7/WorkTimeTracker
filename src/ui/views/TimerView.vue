@@ -324,9 +324,9 @@ onBeforeUnmount(() => {
   width: min(78vw, 290px);
   height: min(78vw, 290px);
   border-radius: 50%;
-  background: radial-gradient(circle at 28% 22%, #ffffff, #edf2ff 62%, #e6efff 100%);
-  border: 4px solid color-mix(in srgb, var(--primary), white 64%);
-  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--primary), white 86%), 0 22px 34px rgba(83, 106, 187, 0.23);
+  background: radial-gradient(circle at 28% 22%, var(--timer-face-start), var(--timer-face-mid) 62%, var(--timer-face-end) 100%);
+  border: 4px solid var(--timer-ring);
+  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--timer-ring), transparent 72%), 0 22px 34px rgba(0, 0, 0, 0.22);
   display: grid;
   place-content: center;
   text-align: center;
@@ -335,8 +335,8 @@ onBeforeUnmount(() => {
 }
 
 .timer-circle.active {
-  border-color: color-mix(in srgb, var(--success), white 45%);
-  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--success), white 84%), 0 24px 38px rgba(40, 161, 115, 0.25);
+  border-color: var(--timer-ring-active);
+  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--timer-ring-active), transparent 72%), 0 24px 38px rgba(20, 110, 78, 0.22);
 }
 
 .timer-circle-label,
@@ -347,7 +347,7 @@ onBeforeUnmount(() => {
 
 .timer-circle-label {
   font-size: 0.9rem;
-  color: var(--text-muted);
+  color: var(--timer-muted);
   font-weight: 700;
 }
 
@@ -356,11 +356,12 @@ onBeforeUnmount(() => {
   font-size: clamp(1.9rem, 7vw, 2.4rem);
   font-weight: 800;
   letter-spacing: 0.06em;
+  color: var(--timer-text);
 }
 
 .timer-circle-status {
   font-size: 0.84rem;
-  color: var(--text-muted);
+  color: var(--timer-muted);
   font-weight: 700;
 }
 
