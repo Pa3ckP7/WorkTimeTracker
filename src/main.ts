@@ -42,17 +42,23 @@ async function initializeWebJeepSqliteHost(): Promise<void> {
   }
 }
 
-await initializeWebJeepSqliteHost()
-
-try {
-  await ensureCoreInitialized()
-} catch (error) {
-  console.error('[Bootstrap] Core initialization failed:', error)
-}
-
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 
 app.mount('#app')
+
+void (async () => {
+  try {
+    await initializeWebJeepSqliteHost()
+  } catch (error) {
+    console.error('[Bootstrap] Web jeep-sqlite host initialization failed:', error)
+  }
+
+  try {
+    await ensureCoreInitialized()
+  } catch (error) {
+    console.error('[Bootstrap] Core initialization failed:', error)
+  }
+})()
