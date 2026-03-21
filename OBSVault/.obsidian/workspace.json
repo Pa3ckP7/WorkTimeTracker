@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Homework 1.md",
+                "file": "Homework 5.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Homework 1"
+              "title": "Homework 5"
             }
           }
         ]
@@ -183,8 +183,17 @@
       "bases:Create new base": false
     }
   },
-  "active": "4d50011c7fdc72d5",
+  "active": "6448983ad425f03a",
   "lastOpenFiles": [
+    "Homework 1.md",
+    "User Testing/Test 3.md",
+    "User Testing/Test 2.md",
+    "User Testing/Test 1.md",
+    "Homework 5.md",
+    "User Testing/Template.md",
+    "User Testing",
+    "Homework 4.md",
+    "Homework 2.md",
     "Pasted image 20260221122814.png",
     "Pasted image 20260221122827.png"
   ]
