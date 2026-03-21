@@ -4,8 +4,10 @@ import { TimerRepository } from "../data/repositories/TimerRepository";
 import type { Timer } from "../data/types";
 
 export interface TimeResult{
+  id: number,
   seconds: number,
-  startDate: Date
+  startDate: Date,
+  endDate: Date | null
 }
 
 // Similar to C#: [Service] or [Injectable]
@@ -32,8 +34,10 @@ export class TimerManagerService{
     const stopTime = new Date();
     await this._timeRepo.updateTimer(timer.id,{endDate: stopTime});
     return {
+      id: timer.id,
       seconds: getTimeDifferenceSeconds(timer.startDate, stopTime),
-      startDate: timer.startDate
+      startDate: timer.startDate,
+      endDate: stopTime
     }
   }
 
@@ -43,8 +47,10 @@ export class TimerManagerService{
     const stopTime = new Date();
     await this._timeRepo.updateTimer(timerId,{endDate: stopTime});
     return {
+      id: timer.id,
       seconds: getTimeDifferenceSeconds(timer.startDate, stopTime),
-      startDate: timer.startDate
+      startDate: timer.startDate,
+      endDate: stopTime
     }
   }
 
@@ -53,17 +59,22 @@ export class TimerManagerService{
     if (timer === null) throw new Error("Timer is not started");
     const stopTime = new Date();
     return {
+      id: timer.id,
       seconds: getTimeDifferenceSeconds(timer.startDate, stopTime),
-      startDate: timer.startDate
+      startDate: timer.startDate,
+      endDate: null
     }
   }
 
   public async GetTime(timerId: number): Promise<TimeResult>{
     const timer = await this._timeRepo.getTimer(timerId);
+    if (timer === null) throw new Error("Timer does not exist");
     const endTime = timer.endDate === null ? new Date() : timer.endDate;
     return {
+      id: timer.id,
       seconds: getTimeDifferenceSeconds(timer.startDate, endTime),
-      startDate: timer.startDate
+      startDate: timer.startDate,
+      endDate: timer.endDate
     }
   }
 
@@ -71,8 +82,10 @@ export class TimerManagerService{
     const timers = await this._timeRepo.getTimersWithProfile(profileId)
     const timeResults = timers.filter( t => t.endDate !== null)
     .map<TimeResult>(t => ({
+      id: t.id,
       seconds: getTimeDifferenceSeconds(t.startDate, t.endDate),
-      startDate: t.startDate
+      startDate: t.startDate,
+      endDate: t.endDate
     }));
     return timeResults;
   }

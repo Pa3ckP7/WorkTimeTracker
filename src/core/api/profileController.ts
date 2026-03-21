@@ -73,6 +73,7 @@ export class ProfileManager{
     const tmrs = await this._timeRepo.getTimersWithProfile(this._profileId)
     const results: TimeResult[] = []
     for(const tmr of tmrs){
+      if (tmr.endDate === null) continue;
       const ctrl = await getTimer(tmr.id);
       const result = await ctrl.getTime();
       results.push(result);

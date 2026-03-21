@@ -16,20 +16,34 @@ const history = ref<TimeResult[]>([])
 const errorMessage = ref('')
 const isBusy = ref(false)
 const manager = ref<Awaited<ReturnType<typeof getProfile>> | null>(null)
+let activeLoadId = 0
 let ticker: number | null = null
 
 const selectedProfile = computed(() =>
-  profiles.value.find((profile) => profile.id === selectedProfileId.value) ?? null
+  profiles.value.find((profile) => profile.id === selectedProfileId.value) ?? null,
 )
 
-// Fetch manager when selectedProfileId changes
 watch(selectedProfileId, async (id) => {
+  const loadId = ++activeLoadId
+
   if (id === null) {
     manager.value = null
+    history.value = []
+    runningTime.value = null
+    stopTicker()
     return
   }
-  manager.value = await getProfile(id)
-  await loadSelectedProfileData()
+
+  try {
+    const nextManager = await getProfile(id)
+    if (loadId !== activeLoadId) return
+
+    manager.value = nextManager
+    await loadSelectedProfileData(loadId)
+  } catch (error) {
+    if (loadId !== activeLoadId) return
+    setError(error)
+  }
 })
 
 const elapsedSeconds = computed(() => {
@@ -98,7 +112,7 @@ async function refreshProfiles(): Promise<void> {
   }
 }
 
-async function loadSelectedProfileData(): Promise<void> {
+async function loadSelectedProfileData(loadId = activeLoadId): Promise<void> {
   history.value = []
   runningTime.value = null
   stopTicker()
@@ -107,12 +121,16 @@ async function loadSelectedProfileData(): Promise<void> {
 
   try {
     runningTime.value = await manager.value.getTime()
+    if (loadId !== activeLoadId) return
     startTicker()
   } catch {
+    if (loadId !== activeLoadId) return
     runningTime.value = null
   }
 
-  history.value = await manager.value.getTimeHistory()
+  const nextHistory = await manager.value.getTimeHistory()
+  if (loadId !== activeLoadId) return
+  history.value = nextHistory
 }
 
 async function initialize(): Promise<void> {
@@ -138,7 +156,6 @@ async function addProfile(): Promise<void> {
     newProfileName.value = ''
     await refreshProfiles()
     selectedProfileId.value = id
-    await loadSelectedProfileData()
   } catch (error) {
     setError(error)
   } finally {
@@ -158,11 +175,7 @@ async function startTimer(): Promise<void> {
   clearError()
   try {
     await manager.value.startTimer()
-    runningTime.value = {
-      seconds: 0,
-      startDate: new Date(),
-    }
-    startTicker()
+    await loadSelectedProfileData()
   } catch (error) {
     setError(error)
   } finally {
@@ -176,10 +189,8 @@ async function stopTimer(): Promise<void> {
   isBusy.value = true
   clearError()
   try {
-    const result = await manager.value.stopTimer()
-    runningTime.value = null
-    stopTicker()
-    history.value = [result, ...history.value]
+    await manager.value.stopTimer()
+    await loadSelectedProfileData()
   } catch (error) {
     setError(error)
   } finally {
@@ -253,7 +264,11 @@ onBeforeUnmount(() => {
         {{ timerButtonLabel }}
       </button>
       <p class="muted timer-hint">
-        {{ selectedProfileId === null ? 'Select a profile to enable timer actions.' : 'One tap to start or stop tracking.' }}
+        {{
+          selectedProfileId === null
+            ? 'Select a profile to enable timer actions.'
+            : 'One tap to start or stop tracking.'
+        }}
       </p>
     </section>
 
@@ -262,7 +277,7 @@ onBeforeUnmount(() => {
     <section class="panel last-entry">
       <h2>Last Logged Entry</h2>
       <p v-if="lastEntry">
-        {{ formatDate(lastEntry.startDate) }} · {{ formatDuration(lastEntry.seconds) }}
+        {{ formatDate(lastEntry.startDate) }} at {{ formatDuration(lastEntry.seconds) }}
       </p>
       <p v-else class="muted">No completed sessions yet.</p>
     </section>
@@ -319,9 +334,16 @@ onBeforeUnmount(() => {
   width: min(78vw, 290px);
   height: min(78vw, 290px);
   border-radius: 50%;
-  background: radial-gradient(circle at 28% 22%, var(--timer-face-start), var(--timer-face-mid) 62%, var(--timer-face-end) 100%);
+  background: radial-gradient(
+    circle at 28% 22%,
+    var(--timer-face-start),
+    var(--timer-face-mid) 62%,
+    var(--timer-face-end) 100%
+  );
   border: 4px solid var(--timer-ring);
-  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--timer-ring), transparent 72%), 0 22px 34px rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 0 0 8px color-mix(in srgb, var(--timer-ring), transparent 72%),
+    0 22px 34px rgba(0, 0, 0, 0.22);
   display: grid;
   place-content: center;
   text-align: center;
@@ -331,7 +353,9 @@ onBeforeUnmount(() => {
 
 .timer-circle.active {
   border-color: var(--timer-ring-active);
-  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--timer-ring-active), transparent 72%), 0 24px 38px rgba(20, 110, 78, 0.22);
+  box-shadow:
+    inset 0 0 0 8px color-mix(in srgb, var(--timer-ring-active), transparent 72%),
+    0 24px 38px rgba(20, 110, 78, 0.22);
 }
 
 .timer-circle-label,

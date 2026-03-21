@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getProfile, getProfileList, type Profile, type TimeResult } from '@core'
 
@@ -21,6 +21,7 @@ const toDate = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 const generateMessage = ref('')
+let activeLoadId = 0
 
 const fromDateObj = computed(() => {
   if (!fromDate.value) return null
@@ -64,7 +65,8 @@ function clearError(): void {
 }
 
 function setError(error: unknown): void {
-  errorMessage.value = error instanceof Error ? error.message : 'Unexpected error while loading export data'
+  errorMessage.value =
+    error instanceof Error ? error.message : 'Unexpected error while loading export data'
 }
 
 function applyQuickRange(range: 'month' | '7days'): void {
@@ -88,17 +90,23 @@ function triggerGenerateMock(): void {
     'PDF export backend is not enabled yet. This is a UI preview of the export flow.'
 }
 
-async function loadExportData(): Promise<void> {
+async function loadExportData(loadId = ++activeLoadId): Promise<void> {
   isLoading.value = true
   clearError()
   generateMessage.value = ''
 
   try {
     const profileList = await getProfileList()
+    if (loadId !== activeLoadId) return
+
     profile.value = profileList.find((item) => item.id === profileId.value) ?? null
 
     const manager = await getProfile(profileId.value)
+    if (loadId !== activeLoadId) return
+
     const history = await manager.getTimeHistory()
+    if (loadId !== activeLoadId) return
+
     entries.value = history
       .map<ExportEntry>((entry: TimeResult, index) => ({
         id: `${profileId.value}-${entry.startDate.toISOString()}-${entry.seconds}-${index}`,
@@ -117,9 +125,13 @@ async function loadExportData(): Promise<void> {
   }
 }
 
-onMounted(async () => {
-  await loadExportData()
-})
+watch(
+  profileId,
+  async () => {
+    await loadExportData()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -141,8 +153,12 @@ onMounted(async () => {
       </div>
 
       <div class="quick-actions">
-        <button class="btn-soft" :disabled="isLoading" @click="applyQuickRange('7days')">Last 7 days</button>
-        <button class="btn-soft" :disabled="isLoading" @click="applyQuickRange('month')">This month</button>
+        <button class="btn-soft" :disabled="isLoading" @click="applyQuickRange('7days')">
+          Last 7 days
+        </button>
+        <button class="btn-soft" :disabled="isLoading" @click="applyQuickRange('month')">
+          This month
+        </button>
       </div>
 
       <label>
@@ -164,10 +180,13 @@ onMounted(async () => {
       <p><strong>Profile:</strong> {{ profile?.name ?? 'Unknown profile' }}</p>
       <p><strong>Entries:</strong> {{ entryCount }}</p>
       <p><strong>Total time:</strong> {{ totalDuration }}</p>
-      <p><strong>Report:</strong> {{ reportType === 'detailed' ? 'Detailed entries' : 'Summary by tags' }}</p>
+      <p>
+        <strong>Report:</strong>
+        {{ reportType === 'detailed' ? 'Detailed entries' : 'Summary by tags' }}
+      </p>
       <p><strong>Tag filter:</strong> {{ tagFilter.trim() || 'No tag filter' }}</p>
 
-      <p v-if="isLoading">Loading export data…</p>
+      <p v-if="isLoading">Loading export data...</p>
       <p v-else-if="errorMessage" class="error">{{ errorMessage }}</p>
       <p v-else-if="entryCount === 0">No entries found for the current filter.</p>
     </section>

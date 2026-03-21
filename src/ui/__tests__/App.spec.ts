@@ -7,7 +7,7 @@ import router from '../router'
 
 describe('App', () => {
   it('mounts and renders tab shell', async () => {
-    router.push('/timer')
+    router.push('/profiles')
     await router.isReady()
 
     const wrapper = mount(App, {
@@ -16,9 +16,8 @@ describe('App', () => {
       },
     })
 
-    expect(wrapper.text()).toContain('Timer')
+    expect(wrapper.text()).toContain('Profiles')
     expect(wrapper.text()).toContain('History')
-    expect(wrapper.text()).toContain('Exports')
-    expect(wrapper.text()).toContain('Settings')
+    expect(wrapper.text()).toContain('Overview')
   })
 })

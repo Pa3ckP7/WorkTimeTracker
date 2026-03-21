@@ -12,13 +12,28 @@ const runningTime = ref<TimeResult | null>(null)
 const history = ref<TimeResult[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
+let activeLoadId = 0
 let ticker: number | null = null
 
-// Fetch manager when profileId changes
-watch(profileId, async (id) => {
-  manager.value = await getProfile(id)
-  await loadProfileData()
-}, { immediate: true })
+watch(
+  profileId,
+  async (id) => {
+    const loadId = ++activeLoadId
+    clearError()
+
+    try {
+      const nextManager = await getProfile(id)
+      if (loadId !== activeLoadId) return
+
+      manager.value = nextManager
+      await loadProfileData(loadId)
+    } catch (error) {
+      if (loadId !== activeLoadId) return
+      setError(error)
+    }
+  },
+  { immediate: true },
+)
 
 const elapsedSeconds = computed(() => {
   if (!runningTime.value) return 0
@@ -66,7 +81,7 @@ function startTicker(): void {
   }, 1000)
 }
 
-async function loadProfileData(): Promise<void> {
+async function loadProfileData(loadId = activeLoadId): Promise<void> {
   if (!manager.value) return
 
   isLoading.value = true
@@ -77,12 +92,16 @@ async function loadProfileData(): Promise<void> {
 
   try {
     const profileList = await getProfileList()
+    if (loadId !== activeLoadId) return
+
     profile.value = profileList.find((item) => item.id === profileId.value) ?? null
 
     try {
       runningTime.value = await manager.value.getTime()
+      if (loadId !== activeLoadId) return
       startTicker()
     } catch {
+      if (loadId !== activeLoadId) return
       runningTime.value = null
     }
 
@@ -102,19 +121,12 @@ async function toggleTimer(): Promise<void> {
 
   try {
     if (hasActiveTimer.value) {
-      const result = await manager.value.stopTimer()
-      runningTime.value = null
-      stopTicker()
-      history.value = [result, ...history.value]
-      return
+      await manager.value.stopTimer()
+    } else {
+      await manager.value.startTimer()
     }
 
-    await manager.value.startTimer()
-    runningTime.value = {
-      seconds: 0,
-      startDate: new Date(),
-    }
-    startTicker()
+    await loadProfileData()
   } catch (error) {
     setError(error)
   } finally {
@@ -138,7 +150,11 @@ onBeforeUnmount(() => {
         <p class="timer-circle-status">{{ hasActiveTimer ? 'Running' : 'Ready to start' }}</p>
       </div>
 
-      <button :class="hasActiveTimer ? 'timer-main-btn btn-danger' : 'timer-main-btn btn-primary'" :disabled="isLoading" @click="toggleTimer">
+      <button
+        :class="hasActiveTimer ? 'timer-main-btn btn-danger' : 'timer-main-btn btn-primary'"
+        :disabled="isLoading"
+        @click="toggleTimer"
+      >
         {{ hasActiveTimer ? 'Stop' : 'Start' }}
       </button>
     </section>
@@ -147,7 +163,7 @@ onBeforeUnmount(() => {
 
     <section class="panel">
       <h2>Last Logged Entry</h2>
-      <p v-if="lastEntry">{{ formatDate(lastEntry.startDate) }} · {{ formatDuration(lastEntry.seconds) }}</p>
+      <p v-if="lastEntry">{{ formatDate(lastEntry.startDate) }} at {{ formatDuration(lastEntry.seconds) }}</p>
       <p v-else class="muted">No completed sessions yet.</p>
     </section>
   </section>
@@ -165,9 +181,16 @@ onBeforeUnmount(() => {
   width: min(78vw, 290px);
   height: min(78vw, 290px);
   border-radius: 50%;
-  background: radial-gradient(circle at 28% 22%, var(--timer-face-start), var(--timer-face-mid) 62%, var(--timer-face-end) 100%);
+  background: radial-gradient(
+    circle at 28% 22%,
+    var(--timer-face-start),
+    var(--timer-face-mid) 62%,
+    var(--timer-face-end) 100%
+  );
   border: 4px solid var(--timer-ring);
-  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--timer-ring), transparent 72%), 0 22px 34px rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 0 0 8px color-mix(in srgb, var(--timer-ring), transparent 72%),
+    0 22px 34px rgba(0, 0, 0, 0.22);
   display: grid;
   place-content: center;
   text-align: center;
@@ -177,7 +200,9 @@ onBeforeUnmount(() => {
 
 .timer-circle.active {
   border-color: var(--timer-ring-active);
-  box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--timer-ring-active), transparent 72%), 0 24px 38px rgba(20, 110, 78, 0.22);
+  box-shadow:
+    inset 0 0 0 8px color-mix(in srgb, var(--timer-ring-active), transparent 72%),
+    0 24px 38px rgba(20, 110, 78, 0.22);
 }
 
 .timer-circle-label,
